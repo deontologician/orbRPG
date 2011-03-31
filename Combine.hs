@@ -442,7 +442,7 @@ data SubWrapper a = SW {subGen :: StdGen
                        ,cTree :: CTree a}
 
 data CTree a = STNode {cVal :: SubWrapper a
-                        ,cLeft :: CTree a
-                        ,cRight :: CTree a
+                      ,cLeft :: CTree a
+                      ,cRight :: CTree a
                         } 
-               | STLeaf {stVal :: SubWrapper a}
+             | STLeaf {cVal :: SubWrapper a}
