@@ -16,7 +16,7 @@ data Validator = Validator {
 
 mainLoop :: Validator -> IO ()
 mainLoop v = do
-  inLine <- readline "[RPG!]> "
+  inLine <- readline "RPG⊨⊛ "
   case inLine of
     Nothing -> putStrLn "Bye!"
     Just "quit" -> putStrLn "Bye!"
