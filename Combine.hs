@@ -1,10 +1,37 @@
+{-# LANGUAGE FlexibleInstances, UndecidableInstances, OverlappingInstances #-}
 module Combine where
 
-data Substance = Null | Black | White 
-               | P {primary :: Primary} | L {letter :: Letter} | G {god :: God} 
-               | D {demon :: Demon} | E {element :: Element} | T {tech :: Tech}
+import System.Random
+
+data Substance = Null | Black | White | P Primary | L Letter | G God 
+               | D Demon | E Element | T Tech
                  deriving (Ord, Eq, Read, Show)
 
+instance Bounded Substance where
+    minBound = Null
+    maxBound = T Gear
+
+instance Enum Substance where
+    fromEnum Null = 0
+    fromEnum Black = 1
+    fromEnum White = 2
+    fromEnum (P p) = 3 + fromEnum p
+    fromEnum (L l) = 6 + fromEnum l
+    fromEnum (G g) = 9 + fromEnum g
+    fromEnum (D d) = 12 + fromEnum d
+    fromEnum (E e) = 15 + fromEnum e
+    fromEnum (T t) = 18 + fromEnum t
+
+    toEnum 0 = Null
+    toEnum 1 = Black
+    toEnum 2 = White
+    toEnum x | x > 2 && x < 6 = P $ toEnum (x - 3)
+             | x > 5 && x < 9 = L $ toEnum (x - 6)
+             | x > 8 && x < 12 = G $ toEnum (x - 9)
+             | x > 11 && x < 15 = D $ toEnum (x - 12)
+             | x > 14 && x < 18 = E $ toEnum (x - 15)
+             | x > 17 && x < 21 = T $ toEnum (x - 18)
+             | otherwise = error "Int out of range for Substance Enum"
 
 data Primary = Red | Green  | Blue 
                deriving (Ord, Eq, Read, Show, Enum, Bounded)
@@ -131,10 +158,10 @@ combine (D Mammon) (D Mammon) = D Asmodeus
 combine (D Mammon) (D Asmodeus) = D Asmodeus
 combine (D Mammon) (D Belial) = D Belial
 combine (D Asmodeus) (D Mammon) = D Asmodeus
-combine (D Asmodeus) (D Asmodeus) = D Asmodeus
-combine (D Asmodeus) (D Belial) = D Mammon
-combine (D Belial) (D Mammon) = D Asmodeus
-combine (D Belial) (D Asmodeus) = D Mammon
+combine (D Asmodeus) (D Asmodeus) = D Belial
+combine (D Asmodeus) (D Belial) = D Belial
+combine (D Belial) (D Mammon) = D Belial
+combine (D Belial) (D Asmodeus) = D Belial
 combine (D Belial) (D Belial) = D Belial
 
 -- Element + Element = Element
@@ -378,3 +405,44 @@ combine (T Transistor) (E Gold) = T Gear
 combine (T Gear) (E Deuterium) = T Piston
 combine (T Gear) (E Erbium) = T Piston
 combine (T Gear) (E Gold) = T Piston
+
+-- Finally done!
+
+instance Random Primary where
+    randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
+        where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
+    random = randomR (minBound,maxBound)
+instance Random Letter where
+    randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
+        where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
+    random = randomR (minBound,maxBound)
+instance Random God where
+    randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
+        where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
+    random = randomR (minBound,maxBound)
+instance Random Demon where
+    randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
+        where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
+    random = randomR (minBound,maxBound)
+instance Random Element where
+    randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
+        where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
+    random = randomR (minBound,maxBound)
+instance Random Tech where
+    randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
+        where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
+    random = randomR (minBound,maxBound)
+instance Random Substance where
+    randomR (a,z) g = (toEnum (retval `mod` 21 ),g')
+        where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
+    random = randomR (minBound,maxBound)
+
+data SubWrapper a = SW {subGen :: StdGen
+                       ,attributes :: a
+                       ,cTree :: CTree a}
+
+data CTree a = STNode {cVal :: SubWrapper a
+                        ,cLeft :: CTree a
+                        ,cRight :: CTree a
+                        } 
+               | STLeaf {stVal :: SubWrapper a}
