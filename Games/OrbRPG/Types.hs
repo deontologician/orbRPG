@@ -1,7 +1,16 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
+module Types where
+
+
+import Combine
+import System.Console.Haskeline
+import Control.Monad.Trans
+import Control.Monad.State
+
 class Describable d where
     name :: d -> String
     desc :: d -> String
-
 
 data Weapon = Weapon {weaponName :: String
                      ,weaponDesc :: String
@@ -39,8 +48,7 @@ data Item = HealingItm {itemName :: String
                        ,healAmt :: (Integer, Integer)
                        }
           | DamageItm { itemName :: String
-                      ,dmgAmt :: (Integer,Integer)
-                      }
+                      ,dmgAmt :: (Integer,Integer)                      }
        deriving (Show, Read)
 instance Describable Item where
     name = itemName
@@ -70,3 +78,31 @@ data Player = Player {playerName :: String
 instance Describable Player where
     name = playerName
     desc = playerDesc
+
+-- Next, here is the overall Monad stack
+type RPG = StateT GameState (InputT IO)
+
+runRPG :: RPG a -> GameState -> IO a
+runRPG r s =
+    let
+        myInputT = runStateT r s
+        myIO = runInputT defaultSettings myInputT
+    in myIO >>= (\(a,_) -> return a)
+
+getInputLine' :: String -> RPG (Maybe String)
+getInputLine' = lift . getInputLine
+
+outputStrLn' :: String -> RPG ()
+outputStrLn' = lift. outputStrLn
+
+-- What do we need for Game state?
+-- Two players.
+-- That's it? Environmental effects? Maybe later.
+data GameState = GameState { you :: Player
+                           ,enemy :: Player}
+
+-- Next, what do we need to represent a "round" of the game?
+data Round = Round {
+    -- A screen, possibly incorporating the current state.
+    printOut :: GameState -> RPG ()
+}
