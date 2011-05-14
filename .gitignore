@@ -3,3 +3,4 @@
 *.o
 *.ods
 CombineGen.py
+*.emacs.desktop*
