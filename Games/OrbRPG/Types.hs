@@ -93,16 +93,32 @@ getInputLine' :: String -> RPG (Maybe String)
 getInputLine' = lift . getInputLine
 
 outputStrLn' :: String -> RPG ()
-outputStrLn' = lift. outputStrLn
+outputStrLn' = lift . outputStrLn
 
 -- What do we need for Game state?
 -- Two players.
 -- That's it? Environmental effects? Maybe later.
+-- Some kind of representation of the game
 data GameState = GameState { you :: Player
-                           ,enemy :: Player}
-
--- Next, what do we need to represent a "round" of the game?
-data Round = Round {
-    -- A screen, possibly incorporating the current state.
-    printOut :: GameState -> RPG ()
+                           ,enemy :: Player
+                           ,scrn :: GameState -> String
+    -- A list of valid inputs and the actions to perform for each of them
+                           ,parser :: String -> Action
 }
+
+-- Basically, the way records work they get the gamestate but the function never
+-- really gets to look at the rest of the gamestate. This remedies that issue
+screen :: GameState -> String
+screen gs = scrn gs gs
+
+-- What is an action? Well I'll tell you.
+type Action = GameState -> GameState
+
+-- takes a list of tokens to actions and a default action and just does a lookup
+simpleparser' :: Action -> [(String,Action)]-> String -> Action
+simpleparser' def cmds str = maybe def id (lookup str cmds)
+
+-- Even simpler!
+simpleparser :: [(String,Action)] -> String -> Action
+simpleparser = simpleparser' id
+

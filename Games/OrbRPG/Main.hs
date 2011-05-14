@@ -9,23 +9,25 @@ main :: IO ()
 main = runRPG rpgLoop initState
 
 
-
 rpgLoop :: RPG ()
 rpgLoop = do
-  cs <- get
-  printOut initRound cs
-  minput <- getInputLine' "++ "
+  gs <- get
+  outputStrLn' . boxer $ screen gs
+  minput <- getInputLine' "❡➤ "
   case minput of
-    Nothing -> return ()
-    Just "exit" -> return ()
-    Just input -> do outputStrLn' $ "Input was: " ++ input
-                     rpgLoop
+    Nothing -> rpgLoop
+    Just "quit" -> cleanup
+    Just "exit" -> cleanup
+    Just input -> put gs' >> rpgLoop
+        where gs' = parser gs input gs
+        
 
 
 initState :: GameState
-initState = GameState{you = roughStart
-                     ,enemy = asalaStart}
-
+initState = GameState{you = undefined
+                     ,enemy = undefined
+                     ,scrn = initScreen
+                     ,parser = initParser}
 
 roughStart :: Player
 roughStart = Player{playerName = "Roughgagh"
@@ -55,20 +57,25 @@ asalaStart = Player{playerName = "Asala"
                    ,elemSlot = Nothing
                    ,techSlot = Nothing}
 
+initOptions :: [String]
+initOptions = map name [roughStart, asalaStart]
 
-initRound :: Round
-initRound = Round{ printOut = const . outputStrLn' $ mainScreen }
+initScreen :: GameState -> String
+initScreen = const . unlines $ concatMap lines 
+             [title," ",blurb," ",command,options]
+   where title = centerScr "Welcome to the Orb RPG game."
+         blurb = cWrapScr $ 
+                 "This game is an RPG with orbs. You may or may not like "++
+                 "the part with the orbs. I'll try to make it fun."
+         command = "Select a Player:"
+         options = indent . bulletList . unlines $ initOptions
 
--- Welcome screen! (boxed)
-mainScreen :: String
-mainScreen = boxer $
-             ["    Welcome to the Orb RPG game.",
-             "",
-             "       This game is an RPG with orbs    ",
-             "       You may or may not like the part ",
-             "       with the orbs.                   ",
-             "                                        ",
-             "      Select a Player:                  ",
-             "        1. Roughgagh                    ",
-             "        2. Asala                        "]
+initParser :: String -> Action
+initParser = undefined
 
+
+sndScreen = const "Bye!"
+sndParser _ gs = const gs
+
+cleanup :: RPG ()
+cleanup = outputStrLn' "Okay, bye!"
