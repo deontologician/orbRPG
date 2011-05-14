@@ -11,15 +11,19 @@ main = runRPG rpgLoop initState
 
 rpgLoop :: RPG ()
 rpgLoop = do
-  gzip@(_,gs,_) <- get
+  gzip@(past,gs,future) <- get
   output . boxer . screen $ gs
   minput <- getInputLine' "❡➤ "
   case minput of
     Nothing -> rpgLoop
     Just "quit" -> cleanup
     Just "exit" -> cleanup
-    Just "undo" -> output "undo!" >> put (undo gzip) >> rpgLoop
-    Just "redo" -> output "redo!" >> put (redo gzip) >> rpgLoop
+    Just "undo" -> when (null past) 
+                     (output "Can't undo!" >> rpgLoop)
+                   >> output "undo!" >> put (undo gzip) >> rpgLoop
+    Just "redo" -> when (null future) 
+                      (output "Can't redo!" >> rpgLoop)
+                   >> output "redo!" >> put (redo gzip) >> rpgLoop
     Just "zen"  -> output "zen!" >> put (zen gzip) >> rpgLoop
     Just "reverse time" -> output "Bad idea." >> put (reverseTime gzip) >> rpgLoop
     Just input -> put (act gs' gzip) >> rpgLoop
@@ -84,4 +88,4 @@ sndParser :: String -> Action
 sndParser _ = id
 
 cleanup :: RPG ()
-cleanup = outputStrLn' "Okay, bye!"
+cleanup = output "Okay, bye!"
