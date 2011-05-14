@@ -79,21 +79,46 @@ instance Describable Player where
     name = playerName
     desc = playerDesc
 
+-- The game state zipper (past,present,future)
+type StateZipper = ([GameState],GameState,[GameState])
 -- Next, here is the overall Monad stack
-type RPG = StateT GameState (InputT IO)
+type RPG = StateT StateZipper (InputT IO)
 
 runRPG :: RPG a -> GameState -> IO a
 runRPG r s =
     let
-        myInputT = runStateT r s
+        myInputT = runStateT r ([],s,[])
         myIO = runInputT defaultSettings myInputT
     in myIO >>= (\(a,_) -> return a)
+
+-- Undoes one state
+undo :: StateZipper -> StateZipper
+undo (p:past,pres,future) = (past,p,pres:future)
+undo z = z
+
+-- Redoes one state
+redo :: StateZipper -> StateZipper
+redo (past,pres,f:future) = (pres:past,f,future)
+redo z = z
+
+-- Performs an action on the current state, wiping out the previous future
+act :: Action -> StateZipper -> StateZipper
+act a (past,pres,_) = (pres:past,a pres,[])
+
+-- Only the present exists. Get it?
+zen :: StateZipper -> StateZipper
+zen (_,pres,_) = ([],pres,[])
+
+-- Reverses time. I don't really think this is a good idea, but who knows?
+reverseTime :: StateZipper -> StateZipper
+reverseTime (past,pres,future) = (future,pres,past)
+
 
 getInputLine' :: String -> RPG (Maybe String)
 getInputLine' = lift . getInputLine
 
-outputStrLn' :: String -> RPG ()
-outputStrLn' = lift . outputStrLn
+output :: String -> RPG ()
+output = lift . outputStrLn
 
 -- What do we need for Game state?
 -- Two players.

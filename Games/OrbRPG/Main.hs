@@ -11,15 +11,19 @@ main = runRPG rpgLoop initState
 
 rpgLoop :: RPG ()
 rpgLoop = do
-  gs <- get
-  outputStrLn' . boxer $ screen gs
+  gzip@(_,gs,_) <- get
+  output . boxer . screen $ gs
   minput <- getInputLine' "❡➤ "
   case minput of
     Nothing -> rpgLoop
     Just "quit" -> cleanup
     Just "exit" -> cleanup
-    Just input -> put gs' >> rpgLoop
-        where gs' = parser gs input gs
+    Just "undo" -> output "undo!" >> put (undo gzip) >> rpgLoop
+    Just "redo" -> output "redo!" >> put (redo gzip) >> rpgLoop
+    Just "zen"  -> output "zen!" >> put (zen gzip) >> rpgLoop
+    Just "reverse time" -> output "Bad idea." >> put (reverseTime gzip) >> rpgLoop
+    Just input -> put (act gs' gzip) >> rpgLoop
+        where gs' = parser gs input
         
 
 
@@ -71,11 +75,13 @@ initScreen = const . unlines $ concatMap lines
          options = indent . bulletList . unlines $ initOptions
 
 initParser :: String -> Action
-initParser = undefined
+initParser = simpleparser undefined
 
 
+sndScreen :: GameState -> String
 sndScreen = const "Bye!"
-sndParser _ gs = const gs
+sndParser :: String -> Action
+sndParser _ = id
 
 cleanup :: RPG ()
 cleanup = outputStrLn' "Okay, bye!"
