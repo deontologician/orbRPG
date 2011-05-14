@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TupleSections #-}
 
 module Types where
 
@@ -131,6 +131,18 @@ data GameState = GameState { you :: Player
                            ,parser :: String -> Action
 }
 
+setYou :: Player -> Action
+setYou pl gs = gs{you = pl}
+
+setEnemy :: Player -> Action
+setEnemy pl gs = gs{enemy = pl}
+
+setScreen :: (GameState -> String) -> Action
+setScreen scr gs = gs{scrn = scr}
+
+setParser :: (String -> Action) -> Action
+setParser ps gs = gs{parser = ps}
+
 -- Basically, the way records work they get the gamestate but the function never
 -- really gets to look at the rest of the gamestate. This remedies that issue
 screen :: GameState -> String
@@ -138,12 +150,22 @@ screen gs = scrn gs gs
 
 -- What is an action? Well I'll tell you.
 type Action = GameState -> GameState
+-- Hey, actions are composable, awesome.
 
 -- takes a list of tokens to actions and a default action and just does a lookup
 simpleparser' :: Action -> [(String,Action)]-> String -> Action
 simpleparser' def cmds str = maybe def id (lookup str cmds)
 
--- Even simpler!
+-- Even simpler...
 simpleparser :: [(String,Action)] -> String -> Action
 simpleparser = simpleparser' id
 
+--Simplest!
+idParser :: String -> Action
+idParser = const id
+
+nameList :: (Describable a) => [a] -> [(String,a)]
+nameList lst = zip (map name lst) lst
+
+addAction :: Action -> [(String,Action)] -> [(String,Action)]
+addAction a = map (\(s,a') -> (s,a . a'))

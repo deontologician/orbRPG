@@ -65,8 +65,8 @@ asalaStart = Player{playerName = "Asala"
                    ,elemSlot = Nothing
                    ,techSlot = Nothing}
 
-initOptions :: [String]
-initOptions = map name [roughStart, asalaStart]
+initOptions :: [Player]
+initOptions = [roughStart, asalaStart]
 
 initScreen :: GameState -> String
 initScreen = const . unlines $ concatMap lines 
@@ -76,10 +76,13 @@ initScreen = const . unlines $ concatMap lines
                  "This game is an RPG with orbs. You may or may not like "++
                  "the part with the orbs. I'll try to make it fun."
          command = "Select a Player:"
-         options = indent . bulletList . unlines $ initOptions
+         options = indent . bulletList . unlines $ map name initOptions
 
 initParser :: String -> Action
-initParser = simpleparser undefined
+initParser = simpleparser . 
+             addAction (setParser idParser)  .
+             addAction (setScreen sndScreen) .
+             map (\(s,pl) -> (s,setYou pl)) . nameList $ initOptions
 
 
 sndScreen :: GameState -> String
