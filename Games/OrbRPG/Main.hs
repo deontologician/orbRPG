@@ -11,24 +11,41 @@ main = runRPG rpgLoop initState
 
 rpgLoop :: RPG ()
 rpgLoop = do
-  gzip@(past,gs,future) <- get
+  gzip@(_,gs,_) <- get
   output . boxer . screen $ gs
   minput <- getInputLine' "❡➤ "
-  case minput of
-    Nothing -> rpgLoop
-    Just "quit" -> cleanup
-    Just "exit" -> cleanup
-    Just "undo" -> when (null past) 
-                     (output "Can't undo!" >> rpgLoop)
-                   >> output "undo!" >> put (undo gzip) >> rpgLoop
-    Just "redo" -> when (null future) 
-                      (output "Can't redo!" >> rpgLoop)
-                   >> output "redo!" >> put (redo gzip) >> rpgLoop
-    Just "zen"  -> output "zen!" >> put (zen gzip) >> rpgLoop
-    Just "reverse time" -> output "Bad idea." >> put (reverseTime gzip) >> rpgLoop
-    Just input -> put (act gs' gzip) >> rpgLoop
-        where gs' = parser gs input
+  case do { input <- minput;
+            lookup input builtins } of
+    Just rpg -> rpg
+    Nothing -> 
+        case do {input <- minput;
+                 gs' <- parser gs input;
+                 Just $ put $ act gs' gzip} of
+          Nothing -> rpgLoop
+          Just rpg -> rpg
         
+
+builtins :: [(String, RPG ())]
+builtins = [("quit",cleanup)
+           ,("exit",cleanup)
+           ,("undo", get >>= (\gzip@(past,_,_) ->
+                      when (null past)
+                      (output (boxer "No past!") >> rpgLoop)
+                      >> output "Undo!" 
+                      >> put (undo gzip)
+                      >> rpgLoop))
+           ,("redo", get >>= (\gzip@(_,_,future) ->
+                      when (null future)
+                      (output "No future!" >> rpgLoop)
+                      >> output "Redo!" 
+                      >> put (redo gzip)
+                      >> rpgLoop))
+           ,("zen",get >>= (\gzip ->
+                      output "Zen! Only the present exists." >>
+                             put (zen gzip) >> rpgLoop))
+           ,("reverse time", get >>= (\gzip ->
+                      output "Bad idea." >> put (reverseTime gzip) >> rpgLoop))
+           ]
 
 
 initState :: GameState
@@ -78,7 +95,7 @@ initScreen = const . unlines $ concatMap lines
          command = "Select a Player:"
          options = indent . bulletList . unlines $ map name initOptions
 
-initParser :: String -> Action
+initParser :: String -> Maybe Action
 initParser = simpleparser . 
              addAction (setParser idParser)  .
              addAction (setScreen sndScreen) .

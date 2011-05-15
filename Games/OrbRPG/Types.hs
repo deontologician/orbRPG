@@ -128,7 +128,7 @@ data GameState = GameState { you :: Player
                            ,enemy :: Player
                            ,scrn :: GameState -> String
     -- A list of valid inputs and the actions to perform for each of them
-                           ,parser :: String -> Action
+                           ,parser :: String -> Maybe Action
 }
 
 setYou :: Player -> Action
@@ -140,8 +140,8 @@ setEnemy pl gs = gs{enemy = pl}
 setScreen :: (GameState -> String) -> Action
 setScreen scr gs = gs{scrn = scr}
 
-setParser :: (String -> Action) -> Action
-setParser ps gs = gs{parser = ps}
+setParser :: (String -> Maybe Action) -> Action
+setParser f gs = gs{parser = f}
 
 -- Basically, the way records work they get the gamestate but the function never
 -- really gets to look at the rest of the gamestate. This remedies that issue
@@ -150,19 +150,15 @@ screen gs = scrn gs gs
 
 -- What is an action? Well I'll tell you.
 type Action = GameState -> GameState
--- Hey, actions are composable, awesome.
+-- Hey, actions are composable, awesome
 
--- takes a list of tokens to actions and a default action and just does a lookup
-simpleparser' :: Action -> [(String,Action)]-> String -> Action
-simpleparser' def cmds str = maybe def id (lookup str cmds)
-
--- Even simpler...
-simpleparser :: [(String,Action)] -> String -> Action
-simpleparser = simpleparser' id
+-- A simple parsing strategy
+simpleparser :: [(String,Action)] -> String -> Maybe Action
+simpleparser cmds str = lookup str cmds
 
 --Simplest!
-idParser :: String -> Action
-idParser = const id
+idParser :: String -> Maybe Action
+idParser = const $ Just id
 
 nameList :: (Describable a) => [a] -> [(String,a)]
 nameList lst = zip (map name lst) lst
