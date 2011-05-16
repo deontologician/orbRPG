@@ -12,7 +12,7 @@ main = runRPG rpgLoop initState
 rpgLoop :: RPG ()
 rpgLoop = do
   gzip@(_,gs,_) <- get
-  output . boxer . screen $ gs
+  output . dBox 80 . screen $ gs
   minput <- getInputLine' "❡➤ "
   case do { input <- minput;
             lookup input builtins } of
@@ -21,8 +21,14 @@ rpgLoop = do
         case do {input <- minput;
                  gs' <- parser gs input;
                  Just $ put $ act gs' gzip} of
-          Nothing -> rpgLoop
+          Nothing -> return ()
           Just rpg -> rpg
+  (_,gs',_) <- get
+  maybe rpgLoop (\resp -> output $ respFormat resp) (response gs')
+  rpgLoop
+
+respFormat :: String -> String
+respFormat = ("⚠ " ++)
         
 
 builtins :: [(String, RPG ())]
@@ -30,29 +36,31 @@ builtins = [("quit",cleanup)
            ,("exit",cleanup)
            ,("undo", get >>= (\gzip@(past,_,_) ->
                       when (null past)
-                      (output (boxer "No past!") >> rpgLoop)
-                      >> output "Undo!" 
+                      (output (respFormat "No past!") >> rpgLoop)
+                      >> output (respFormat "Undo!")
                       >> put (undo gzip)
                       >> rpgLoop))
            ,("redo", get >>= (\gzip@(_,_,future) ->
                       when (null future)
-                      (output "No future!" >> rpgLoop)
-                      >> output "Redo!" 
+                      (output (respFormat "No future!") >> rpgLoop)
+                      >> output (respFormat "Redo!")
                       >> put (redo gzip)
                       >> rpgLoop))
            ,("zen",get >>= (\gzip ->
-                      output "Zen! Only the present exists." >>
+                      output (respFormat "Only the present exists.") >>
                              put (zen gzip) >> rpgLoop))
            ,("reverse time", get >>= (\gzip ->
-                      output "Bad idea." >> put (reverseTime gzip) >> rpgLoop))
+                                      output (respFormat "Bad idea.")
+                                      >> put (reverseTime gzip) >> rpgLoop))
            ]
 
 
 initState :: GameState
-initState = GameState{you = undefined
-                     ,enemy = undefined
+initState = GameState{you = roughStart
+                     ,enemy = Nothing
                      ,scrn = initScreen
-                     ,parser = initParser}
+                     ,parser = initParser
+                     ,response = Nothing}
 
 roughStart :: Player
 roughStart = Player{playerName = "Roughgagh"
@@ -85,11 +93,11 @@ asalaStart = Player{playerName = "Asala"
 initOptions :: [Player]
 initOptions = [roughStart, asalaStart]
 
-initScreen :: GameState -> String
-initScreen = const . unlines $ concatMap lines 
-             [title," ",blurb," ",command,options]
-   where title = centerScr "Welcome to the Orb RPG game."
-         blurb = cWrapScr $ 
+initScreen :: GameState -> NameDesc
+initScreen = const (title, unlines $ concatMap lines 
+             [" ",blurb," ",command,options])
+   where title = "Welcome to the Orb RPG game."
+         blurb = centerScr $
                  "This game is an RPG with orbs. You may or may not like "++
                  "the part with the orbs. I'll try to make it fun."
          command = "Select a Player:"
@@ -102,10 +110,10 @@ initParser = simpleparser .
              map (\(s,pl) -> (s,setYou pl)) . nameList $ initOptions
 
 
-sndScreen :: GameState -> String
-sndScreen = const "Bye!"
-sndParser :: String -> Action
-sndParser _ = id
+sndScreen :: GameState -> NameDesc
+sndScreen = const ("Bye",centerScr "Bye!")
+sndParser :: String -> Maybe Action
+sndParser _ = Nothing
 
 cleanup :: RPG ()
-cleanup = output "Okay, bye!"
+cleanup = output (respFormat "Okay, bye!")

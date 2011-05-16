@@ -24,6 +24,9 @@ wrapAsNeeded :: Int -> String -> String
 wrapAsNeeded n = unlines . concatMap go . lines
     where go str = if length str <= n then [str]
                    else lines $ wrap n str
+
+wrapScr :: String -> String
+wrapScr = wrapAsNeeded 74
                
 -- puts a box around a list of strings
 titleBox :: Int -> String -> String -> String
@@ -120,6 +123,10 @@ center' c w  s = T.unpack . T.init . T.unlines .
 
 center :: Int -> String -> String
 center = center' ' '
+
+-- Common center width
+centerScr :: String -> String
+centerScr = center 74
 
 bulletList :: String -> String
 bulletList = unlines . zipWith (++) (repeat "• ") . lines

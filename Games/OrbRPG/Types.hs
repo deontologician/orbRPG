@@ -1,4 +1,6 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, TupleSections, FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TupleSections, FlexibleInstances,
+    TypeSynonymInstances
+ #-}
 
 module Types where
 
@@ -12,7 +14,9 @@ class Describable d where
     name :: d -> String
     desc :: d -> String
 
-instance Describable (String,String) where
+type NameDesc = (String,String)
+
+instance Describable NameDesc where
     name = fst
     desc = snd
 
@@ -129,8 +133,8 @@ output = lift . outputStrLn
 -- That's it? Environmental effects? Maybe later.
 -- Some kind of representation of the game
 data GameState = GameState { you :: Player
-                           ,enemy :: Player
-                           ,scrn :: GameState -> String
+                           ,enemy :: Maybe Player
+                           ,scrn :: GameState -> NameDesc
     -- A list of valid inputs and the actions to perform for each of them
                            ,parser :: String -> Maybe Action
                            ,response :: Maybe String
@@ -139,10 +143,10 @@ data GameState = GameState { you :: Player
 setYou :: Player -> Action
 setYou pl gs = gs{you = pl}
 
-setEnemy :: Player -> Action
+setEnemy :: Maybe Player -> Action
 setEnemy pl gs = gs{enemy = pl}
 
-setScreen :: (GameState -> String) -> Action
+setScreen :: (GameState -> NameDesc) -> Action
 setScreen scr gs = gs{scrn = scr}
 
 setParser :: (String -> Maybe Action) -> Action
@@ -153,7 +157,7 @@ setResponse str gs = gs{response = str}
 
 -- Basically, the way records work they get the gamestate but the function never
 -- really gets to look at the rest of the gamestate. This remedies that issue
-screen :: GameState -> String
+screen :: GameState -> NameDesc
 screen gs = scrn gs gs
 
 -- What is an action? Well I'll tell you.
