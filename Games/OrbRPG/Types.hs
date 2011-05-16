@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, TupleSections #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TupleSections, FlexibleInstances #-}
 
 module Types where
 
@@ -11,6 +11,10 @@ import Control.Monad.State
 class Describable d where
     name :: d -> String
     desc :: d -> String
+
+instance Describable (String,String) where
+    name = fst
+    desc = snd
 
 data Weapon = Weapon {weaponName :: String
                      ,weaponDesc :: String
@@ -129,6 +133,7 @@ data GameState = GameState { you :: Player
                            ,scrn :: GameState -> String
     -- A list of valid inputs and the actions to perform for each of them
                            ,parser :: String -> Maybe Action
+                           ,response :: Maybe String
 }
 
 setYou :: Player -> Action
@@ -142,6 +147,9 @@ setScreen scr gs = gs{scrn = scr}
 
 setParser :: (String -> Maybe Action) -> Action
 setParser f gs = gs{parser = f}
+
+setResponse :: Maybe String -> Action
+setResponse str gs = gs{response = str}
 
 -- Basically, the way records work they get the gamestate but the function never
 -- really gets to look at the rest of the gamestate. This remedies that issue
