@@ -113,6 +113,10 @@ fourBox n a b c d = dBox aW a `nextTo` dBox bW b
         cW = myMod n' 4 2
         dW = myMod n' 4 3
 
+boxList :: (Describable a) => Int -> [a] -> String
+boxList w (x:xs) = foldr (nextTo . dBox w) (dBox w x) xs
+boxList _ _ = ""
+
 
 -- centers text in a field of length w (identity if string is too long)
 center' :: Char -> Int -> String -> String

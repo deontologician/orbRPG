@@ -5,10 +5,11 @@
 module Types where
 
 
-import Combine
 import System.Console.Haskeline
 import Control.Monad.Trans
 import Control.Monad.State
+
+import Combine
 
 class Describable d where
     name :: d -> String
@@ -152,8 +153,22 @@ setScreen scr gs = gs{scrn = scr}
 setParser :: (String -> Maybe Action) -> Action
 setParser f gs = gs{parser = f}
 
-setResponse :: Maybe String -> Action
-setResponse str gs = gs{response = str}
+setResponse :: String -> Action
+setResponse str gs = gs{response = Just str}
+
+noResponse :: Action
+noResponse gs = gs{response = Nothing}
+
+
+infoResp :: String -> String
+infoResp = ("⚙ " ++)
+
+succeedResp :: String -> String 
+succeedResp = ("✓ " ++ )
+
+failResp :: String -> String
+failResp = ("✗ " ++)
+       
 
 -- Basically, the way records work they get the gamestate but the function never
 -- really gets to look at the rest of the gamestate. This remedies that issue
@@ -169,11 +184,12 @@ simpleparser :: [(String,Action)] -> String -> Maybe Action
 simpleparser cmds str = lookup str cmds
 
 --Simplest!
-idParser :: String -> Maybe Action
-idParser = const $ Just id
+noParser :: String -> Maybe Action
+noParser = const Nothing
 
 nameList :: (Describable a) => [a] -> [(String,a)]
 nameList lst = zip (map name lst) lst
+
 
 addAction :: Action -> [(String,Action)] -> [(String,Action)]
 addAction a = map (\(s,a') -> (s,a . a'))
