@@ -3,10 +3,13 @@ module Main where
 import Types
 import Formatting
 import Control.Monad.State
+import System.Random
 
 
 main :: IO ()
-main = runRPG rpgLoop initState
+main = do
+  sg <- getStdGen
+  runRPG rpgLoop $ initState sg
 
 
 rpgLoop :: RPG ()
@@ -51,12 +54,13 @@ builtins loop = [("quit",cleanup)
            ]
 
 
-initState :: GameState
-initState = GameState{you = roughStart
+initState :: StdGen -> GameState
+initState sg = GameState{you = roughStart
                      ,enemy = Nothing
                      ,scrn = welcomeScreen
                      ,parser = initParser
-                     ,response = Nothing}
+                     ,response = Nothing
+                     ,seed = sg}
 
 roughStart :: Player
 roughStart = Player{playerName = "Roughgagh"

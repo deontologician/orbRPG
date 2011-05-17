@@ -8,6 +8,7 @@ module Types where
 import System.Console.Haskeline
 import Control.Monad.Trans
 import Control.Monad.State
+import System.Random
 
 import Combine
 
@@ -139,6 +140,7 @@ data GameState = GameState { you :: Player
     -- A list of valid inputs and the actions to perform for each of them
                            ,parser :: String -> Maybe Action
                            ,response :: Maybe String
+                           ,seed :: StdGen
 }
 
 setYou :: Player -> Action
