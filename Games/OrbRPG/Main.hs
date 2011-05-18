@@ -20,8 +20,8 @@ rpgLoop = do
   output . dBox 80 . screen $ gs
   minput <- getInputLine' "❡➤ "
   case do { input <- minput;
-            lookup input $ builtins rpgLoop} of
-    Just rpg -> rpg
+            lookup input $ builtins} of
+    Just (b,rpg) -> rpg >> when b rpgLoop
     Nothing -> 
         case do {input <- minput;
                  gs' <- parser gs input;
@@ -30,27 +30,27 @@ rpgLoop = do
           Just rpg -> rpg >> rpgLoop
  
 
-builtins :: RPG () -> [(String, RPG ())]
-builtins loop = [("quit",cleanup)
-                ,("exit",cleanup)
-                ,("undo", get >>= (\gzip@(past,_,_) ->
-                                   when (null past)
-                                   (output (failResp "No past!") >> loop)
-                                   >> output "↶ Undo!"
-                                   >> put (undo gzip)
-                                   >> loop))
-                ,("redo", get >>= (\gzip@(_,_,future) ->
-                                   when (null future)
-                                   (output (failResp "No future!") >> loop)
-                                   >> output "↷ Redo!"
-                                   >> put (redo gzip)
-                                   >> loop))
-                ,("zen", get >>= (\gzip ->
-                                  output "☯ Only the present exists." >>
-                                  put (zen gzip) >> loop))
-                ,("reverse time", get >>= (\gzip ->
-                                           output "☢ You've made a huge mistake."
-                                           >> put (reverseTime gzip) >> loop))
+-- Built in commands. The extra boolean parameter determines if the program
+-- needs to loop after the action is carried out. (i.e. not exit)
+builtins :: [(String, (Bool, RPG ()))]
+builtins = [("quit",(False,cleanup))
+           ,("exit",(False,cleanup))
+           ,("undo",(True, get >>= (\gzip@(past,_,_) ->
+                                    when (null past)
+                                    (output . failResp $ "No past!")
+                                    >> output "↶ Undo!"
+                                    >> put (undo gzip))))
+           ,("redo",(True, get >>= (\gzip@(_,_,future) ->
+                                    when (null future)
+                                    (output (failResp "No future!"))
+                                    >> output "↷ Redo!"
+                                    >> put (redo gzip))))
+           ,("zen", (True, get >>= (\gzip ->
+                                    output "☯ Only the present exists." >>
+                                    put (zen gzip))))
+           ,("reverse time",(True, get >>= (\gzip ->
+                                            output "☢ You've made a huge mistake."
+                                            >> put (reverseTime gzip))))
            ]
 
 
@@ -104,12 +104,16 @@ welcomeScreen = const (title, unlines $ concatMap lines
          options = boxList 20 initOptions
 
 initParser :: String -> Maybe Action
-initParser = simpleparser . 
-             addAction (setParser gameOverParser) .
-             addAction (setScreen gameOverScr) .
-             -- addAction (setResponse $ "You chose " ++ name pl ++ "")
-             map (\(s,pl) -> (s,setYou pl . resp pl)) . nameList $ initOptions
-    where resp pl = setResponse . succeedResp $ "You chose " ++ name pl ++ "."
+initParser str = 
+    case simpleparser parselist str of
+      Nothing -> Just (setResponse . failResp $ "No character by that name")
+      Just action -> Just action
+    where 
+      parselist = addAction (setParser gameOverParser) .
+                  addAction (setScreen gameOverScr) .
+                            map (\(s,pl) -> (s,setYou pl . resp pl)) 
+                                    . nameList $ initOptions
+      resp pl = setResponse . succeedResp $ "You chose " ++ name pl ++ "."
 
 
 gameOverScr :: GameState -> NameDesc
