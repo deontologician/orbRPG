@@ -2,5 +2,7 @@
 *.hi
 *.o
 *.ods
-CombineGen.py
+*Gen.py
 *.emacs.desktop*
+combinations.txt
+combinations.pdf
