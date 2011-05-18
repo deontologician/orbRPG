@@ -226,7 +226,7 @@ P Red #>> T Gear = G Hypnos
 P Green #>> T Piston = L Lambda
 P Green #>> T Transistor = P Green
 P Green #>> T Gear = D Belial
-P Blue #>> T Piston = T Gear
+P Blue #>> T Piston = G Thanatos
 P Blue #>> T Transistor = P Red
 P Blue #>> T Gear = T Transistor
 
@@ -445,7 +445,7 @@ G Hypnos #>> D Asmodeus = T Transistor
 G Hypnos #>> D Belial = G Nyx
 G Thanatos #>> D Mammon = L Mu
 G Thanatos #>> D Asmodeus = E Erbium
-G Thanatos #>> D Belial = G Hypnos
+G Thanatos #>> D Belial = T Gear
 
 -- God + Tech
 G Nyx #>> T Piston = L Lambda
@@ -454,7 +454,7 @@ G Nyx #>> T Gear = T Transistor
 G Hypnos #>> T Piston = P Red
 G Hypnos #>> T Transistor = P Blue
 G Hypnos #>> T Gear = P Blue
-G Thanatos #>> T Piston = P Green
+G Thanatos #>> T Piston = D Asmodeus
 G Thanatos #>> T Transistor = G Nyx
 G Thanatos #>> T Gear = E Erbium
 
@@ -578,7 +578,7 @@ T Gear #>> E Erbium = E Erbium
 T Gear #>> E Cesium = P Blue
 
 -- Tech + God
-T Piston #>> G Nyx = T Gear
+T Piston #>> G Nyx = G Hypnos
 T Piston #>> G Hypnos = L Lambda
 T Piston #>> G Thanatos = L Mu
 T Transistor #>> G Nyx = G Hypnos
@@ -597,7 +597,7 @@ T Transistor #>> D Asmodeus = P Red
 T Transistor #>> D Belial = L Mu
 T Gear #>> D Mammon = T Transistor
 T Gear #>> D Asmodeus = D Asmodeus
-T Gear #>> D Belial = L Mu
+T Gear #>> D Belial = T Gear
 
 -- Tech + Tech
 T Piston #>> T Piston = E Cesium

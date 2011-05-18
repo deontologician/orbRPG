@@ -99,7 +99,7 @@ Combinations = [None
 ,('P Green', 'T Piston', 'L Lambda')
 ,('P Green', 'T Transistor', 'P Green')
 ,('P Green', 'T Gear', 'D Belial')
-,('P Blue', 'T Piston', 'T Gear')
+,('P Blue', 'T Piston', 'G Thanatos')
 ,('P Blue', 'T Transistor', 'P Red')
 ,('P Blue', 'T Gear', 'T Transistor')
 ,('L Lambda', 'White', 'L Mu')
@@ -272,14 +272,14 @@ Combinations = [None
 ,('G Hypnos', 'D Belial', 'G Nyx')
 ,('G Thanatos', 'D Mammon', 'L Mu')
 ,('G Thanatos', 'D Asmodeus', 'E Erbium')
-,('G Thanatos', 'D Belial', 'G Hypnos')
+,('G Thanatos', 'D Belial', 'T Gear')
 ,('G Nyx', 'T Piston', 'L Lambda')
 ,('G Nyx', 'T Transistor', 'P Green')
 ,('G Nyx', 'T Gear', 'T Transistor')
 ,('G Hypnos', 'T Piston', 'P Red')
 ,('G Hypnos', 'T Transistor', 'P Blue')
 ,('G Hypnos', 'T Gear', 'P Blue')
-,('G Thanatos', 'T Piston', 'P Green')
+,('G Thanatos', 'T Piston', 'D Asmodeus')
 ,('G Thanatos', 'T Transistor', 'G Nyx')
 ,('G Thanatos', 'T Gear', 'E Erbium')
 ,('D Mammon', 'White', 'G Hypnos')
@@ -375,7 +375,7 @@ Combinations = [None
 ,('T Gear', 'E Deuterium', 'L Lambda')
 ,('T Gear', 'E Erbium', 'E Erbium')
 ,('T Gear', 'E Cesium', 'P Blue')
-,('T Piston', 'G Nyx', 'T Gear')
+,('T Piston', 'G Nyx', 'G Hypnos')
 ,('T Piston', 'G Hypnos', 'L Lambda')
 ,('T Piston', 'G Thanatos', 'L Mu')
 ,('T Transistor', 'G Nyx', 'G Hypnos')
@@ -392,7 +392,7 @@ Combinations = [None
 ,('T Transistor', 'D Belial', 'L Mu')
 ,('T Gear', 'D Mammon', 'T Transistor')
 ,('T Gear', 'D Asmodeus', 'D Asmodeus')
-,('T Gear', 'D Belial', 'L Mu')
+,('T Gear', 'D Belial', 'T Gear')
 ,('T Piston', 'T Piston', 'E Cesium')
 ,('T Piston', 'T Transistor', 'G Nyx')
 ,('T Piston', 'T Gear', 'E Deuterium')
@@ -407,7 +407,7 @@ Combinations = [None
 Combinations.remove(None)
 
 G = pgv.AGraph(strict = True, directed = True,
-               fontsize = 12, size = "7.75,10.5")
+               fontsize = 12, size = "24,24")
 
 def addedge((a,b,c)):
     G.add_edge(a,c,b)
@@ -420,4 +420,4 @@ for C in Combinations:
 # circo, neato, acyclic, nop, gvpr, dot.
 
 G.layout('circo')
-G.draw("combinations.pdf")
+G.draw("combinations.png")
