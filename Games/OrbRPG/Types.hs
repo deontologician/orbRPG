@@ -38,6 +38,26 @@ instance Describable EnergyType where
     name = show
     desc = energyDesc
 
+
+-- For a given orb type, gives the calculation of its damage types and points
+-- towards that type
+baseEnergy :: Orb -> [(Int, EnergyType)]
+baseEnergy x = doitup x
+    where 
+      go a e1 e2 = [(fromEnum a,e1),(fromEnum a,e2)]
+      doitup Null = []
+      doitup White = []
+      doitup Black = []
+      doitup (P p) = go p Abstract Physical
+      doitup (L l) = go l Abstract Symbol
+      doitup (E e) = go e Physical Symbol
+      doitup (G g) = go g Spiritual Progress
+      doitup (D d) = go d Spiritual Regress
+      doitup (T t) = go t Progress Regress
+
+
+
+
 -- describes the different Energy types
 energyDesc :: EnergyType -> String
 energyDesc Abstract = "Thought energy apart from concrete realities, " ++
@@ -172,8 +192,9 @@ failResp :: String -> String
 failResp = ("✗ " ++)
        
 
--- Basically, the way records work they get the gamestate but the function never
--- really gets to look at the rest of the gamestate. This remedies that issue
+-- Basically, the way records work the function technically gets the gamestate
+-- but never really gets to look at the rest of the gamestate. This remedies
+-- that issue
 screen :: GameState -> NameDesc
 screen gs = scrn gs gs
 

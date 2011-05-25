@@ -17,9 +17,9 @@ instance Enum Orb where
     fromEnum White = 2
     fromEnum (P p) = 3 + fromEnum p
     fromEnum (L l) = 6 + fromEnum l
-    fromEnum (E g) = 9 + fromEnum g
-    fromEnum (G d) = 12 + fromEnum d
-    fromEnum (D e) = 15 + fromEnum e
+    fromEnum (E e) = 9 + fromEnum e
+    fromEnum (G g) = 12 + fromEnum g
+    fromEnum (D d) = 15 + fromEnum d
     fromEnum (T t) = 18 + fromEnum t
 
     toEnum 0 = Null
@@ -44,14 +44,14 @@ data Primary = Red | Green  | Blue
 data Letter = Lambda | Mu | Omega 
             deriving (Ord, Eq, Enum, Bounded)
 
+data Element = Deuterium | Erbium | Cesium
+             deriving (Ord, Eq, Read, Show, Enum, Bounded)
+
 data God = Nyx | Hypnos | Thanatos
          deriving (Ord, Eq, Read, Show, Enum, Bounded)
 
 data Demon = Mammon | Asmodeus | Belial
            deriving (Ord, Eq, Read, Show, Enum, Bounded)
-
-data Element = Deuterium | Erbium | Cesium
-             deriving (Ord, Eq, Read, Show, Enum, Bounded)
 
 data Tech = Piston | Transistor | Gear
           deriving (Ord, Eq, Read, Show, Enum, Bounded)
@@ -641,6 +641,25 @@ instance Random Orb where
     randomR (a,z) g = (toEnum (retval `mod` 21 ),g')
         where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
     random = randomR (minBound,maxBound)
+
+class Orbable a where
+    o :: a -> Orb
+
+instance Orbable Primary where
+    o = P
+instance Orbable Letter where
+    o = L
+instance Orbable Element where
+    o = E
+instance Orbable God where
+    o = G
+instance Orbable Demon where
+    o = D
+instance Orbable Tech where
+    o = T
+instance Orbable Orb where
+    o = id
+
 
 data OrbTree a = OrbNode {orb :: Orb
                          ,attr :: a
