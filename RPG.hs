@@ -1,7 +1,7 @@
 module Main where
 
-import Types
-import Formatting
+import Game.OrbRPG.Types
+import Game.OrbRPG.Formatting
 import Control.Monad.State
 import System.Random
 

@@ -1,0 +1,18 @@
+cabal-version:       >= 1.2
+name:                orbrpg
+version:             0.0.0
+stability:           experimental
+synopsis:            Text adventure game featuring orbs
+description:         OrbRPG is a text adventure games where you can
+                     use orbs to attack defend and explore.
+category:            Game
+build-type:          Simple
+license:             GPL
+license-file:        COPYING
+extra-source-files:  README
+author:              Josh Kuhn
+maintainer:          habitue@gmail.com
+
+executable orbrpg
+  main-is:           RPG.hs
+  build-depends:     base, random, mtl, haskeline, text

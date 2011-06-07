@@ -1,8 +1,9 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, TupleSections, FlexibleInstances,
-    TypeSynonymInstances
- #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
-module Types where
+module Game.OrbRPG.Types where
 
 
 import System.Console.Haskeline
@@ -10,7 +11,7 @@ import Control.Monad.Trans
 import Control.Monad.State
 import System.Random
 
-import Combine
+import Game.OrbRPG.Combine
 
 class Describable d where
     name :: d -> String
@@ -22,26 +23,22 @@ instance Describable NameDesc where
     name = fst
     desc = snd
 
-data Weapon = Weapon {weaponName :: String
-                     ,weaponDesc :: String
-                     ,dmg :: (Integer,Integer)
-                     ,dmgType :: EnergyType
-                     }
-            deriving (Show, Read)
-instance Describable Weapon where
-    name = weaponName
-    desc = weaponDesc
-
 data EnergyType = Abstract | Symbol | Physical | Spiritual | Regress | Progress
                 deriving (Show,Read)
 instance Describable EnergyType where
     name = show
     desc = energyDesc
 
+type Damage = (Int,EnergyType)
+dmgType :: Damage -> EnergyType
+dmgType = snd
+
+dmgAmt :: Damage -> Int
+dmgAmt = fst
 
 -- For a given orb type, gives the calculation of its damage types and points
 -- towards that type
-baseEnergy :: Orb -> [(Int, EnergyType)]
+baseEnergy :: Orb -> [Damage]
 baseEnergy x = doitup x
     where 
       go a e1 e2 = [(fromEnum a,e1),(fromEnum a,e2)]
@@ -73,16 +70,6 @@ energyDesc Regress = "Energy to revert to an earlier or less advanced "++
 energyDesc Progress = "Energy of movement toward a goal or to a further"++
                       " or higher stage."
 
-data Item = HealingItm {itemName :: String
-                       ,itemDesc :: String
-                       ,healAmt :: (Integer, Integer)
-                       }
-          | DamageItm { itemName :: String
-                      ,dmgAmt :: (Integer,Integer)                      }
-       deriving (Show, Read)
-instance Describable Item where
-    name = itemName
-    desc = itemDesc
 
 data Slots = Slots {
                    }
@@ -94,8 +81,8 @@ emptySlots = Slots {}
 data Player = Player {playerName :: String
                      ,playerDesc :: String
                      ,hp :: Integer
-                     ,weapons :: [Weapon]
-                     ,items :: [Item]
+                     ,weapons :: [Orb]
+                     ,items :: [Orb]
                      ,orbs :: [Orb]
                      ,primSlot :: Maybe Primary
                      ,lettSlot :: Maybe Letter

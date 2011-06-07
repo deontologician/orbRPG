@@ -1,8 +1,8 @@
-module Formatting where
+module Game.OrbRPG.Formatting where
 
 import qualified Data.Text as T
 import Data.List (foldl')
-import Types
+import Game.OrbRPG.Types
 
 
 -- Creates a line of just ═ characters

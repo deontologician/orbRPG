@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleInstances, UndecidableInstances, OverlappingInstances #-}
-module Combine where
+module Game.OrbRPG.Combine where
 
 import System.Random
 
@@ -613,34 +613,73 @@ T Gear #>> T Gear = G Nyx
 
 -- Finally done!
 
+-- Expands a single element into its neighbors in their respective probabilities
+-- This implicitly holds the intra Orb-type rarity
+xpand :: (Enum a, Bounded a) => a -> [a]
+xpand _ = [a',a',a',b,b,c]
+    where
+      a' = minBound
+      b = succ a'
+      c = succ b
+
+xpand' :: (Orbable a, Enum a, Bounded a) => Int -> a ->  [Orb]
+xpand' n = map o . concat . replicate n . xpand
+
+-- These are the individual Orb type probabilities
+pp :: [Orb]
+pp = xpand' 12 (minBound :: Primary)
+ll :: [Orb]
+ll = xpand' 10 (minBound :: Letter)
+ee :: [Orb]
+ee = xpand' 8  (minBound :: Element)
+gg :: [Orb]
+gg = xpand' 6  (minBound :: God)
+dd :: [Orb]
+dd = xpand' 4  (minBound :: Demon)
+tt :: [Orb]
+tt = xpand' 2  (minBound :: Tech)
+
+orbProbList :: [Orb]
+orbProbList = concat [[White],[Black],pp,ll,ee,gg,dd,tt]
+
+randElem :: (RandomGen g) => [a] -> g -> (a,g)
+randElem as g = (as !! i,g')
+    where
+      len = length as
+      (i,g') = randomR (0, len - 1) g
+      
+      
+
 instance Random Primary where
     randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
         where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
-    random = randomR (minBound,maxBound)
+    random = randElem $ xpand Red
 instance Random Letter where
     randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
         where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
-    random = randomR (minBound,maxBound)
-instance Random God where
-    randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
-        where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
-    random = randomR (minBound,maxBound)
-instance Random Demon where
-    randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
-        where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
-    random = randomR (minBound,maxBound)
+    random = randElem $ xpand Lambda
 instance Random Element where
     randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
         where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
-    random = randomR (minBound,maxBound)
+    random = randElem $ xpand Deuterium
+
+instance Random God where
+    randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
+        where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
+    random = randElem $ xpand Nyx
+instance Random Demon where
+    randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
+        where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
+    random = randElem $ xpand Mammon
 instance Random Tech where
     randomR (a,z) g = (toEnum (retval `mod` 3 ),g')
         where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
-    random = randomR (minBound,maxBound)
+    random = randElem $ xpand Piston
+
 instance Random Orb where
     randomR (a,z) g = (toEnum (retval `mod` 21 ),g')
         where (retval,g') = randomR (fromEnum a ,fromEnum z ) g
-    random = randomR (minBound,maxBound)
+    random = randElem orbProbList
 
 class Orbable a where
     o :: a -> Orb
