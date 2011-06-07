@@ -42,9 +42,9 @@ titleBox w title s = if length title + 2 > w
       wM = wBig - 2*margin -- width of the actual text - margins and ║s
       s' = lines . wrapAsNeeded wM $ s
       fixlen str = if length str <= wM
-                   then str ++ (replicate (wM - length str) ' ')
+                   then str ++ replicate (wM - length str) ' '
                    else take wM str
-      emptyline = "║" ++ (replicate wBig ' ') ++ "║\n"
+      emptyline = "║" ++ replicate wBig ' ' ++ "║\n"
       makemiddle = unlines $ map (\r -> "║  " ++ fixlen r ++ "  ║") s'
       topper = "╔" ++ center' '═' wBig title ++ "╗\n"
       bottomer = "╚" ++ line wBig ++ "╝\n"
@@ -68,13 +68,13 @@ x `nextTo` y = unlines $ zipWith (\l r -> l ++ " " ++ r) xlines ylines
       maxXlen = maxlen x
       maxYlen = maxlen y
       padX = map (\ln -> ln ++ 
-                   (replicate (maxXlen - length ln ) ' ')) (lines x)
+                   replicate (maxXlen - length ln ) ' ') (lines x)
       padY = map (\ln -> ln ++ 
-                   (replicate (maxYlen - length ln ) ' ')) (lines y)          
+                   replicate (maxYlen - length ln ) ' ') (lines y)          
       xlines = if xlen >= ylen then padX 
-               else padX ++ (replicate (ylen - xlen) (replicate maxXlen ' '))
+               else padX ++ replicate (ylen - xlen) (replicate maxXlen ' ')
       ylines = if ylen >= xlen then padY
-               else padY ++ (replicate (xlen - ylen) (replicate maxYlen ' '))
+               else padY ++ replicate (xlen - ylen) (replicate maxYlen ' ')
 
 
 -- Max width of lines in a string
@@ -83,7 +83,7 @@ maxlen = foldl (\a b -> max a (length b)) 0 . lines
 
 -- this is useful later
 myMod :: Int -> Int -> Int -> Int
-myMod n m i = div n m + (max 0 $ mod n m - i)
+myMod n m i = div n m + max 0 $ mod n m - i
 
 twoBox :: (Describable a, Describable b) => Int -> a -> b -> String
 twoBox n a b = dBox aW a `nextTo` dBox bW b
@@ -120,8 +120,8 @@ boxList _ _ = ""
 
 -- centers text in a field of length w (identity if string is too long)
 center' :: Char -> Int -> String -> String
-center' c w "\n" = (replicate w c)
-center' c w "" = (replicate w c)
+center' c w "\n" = replicate w c
+center' c w "" = replicate w c
 center' c w  s = T.unpack . T.init . T.unlines .
               map (T.center w c) . T.lines $ T.pack s
 
@@ -136,7 +136,7 @@ bulletList :: String -> String
 bulletList = unlines . zipWith (++) (repeat "• ") . lines
 
 indent' :: Int -> String -> String
-indent' n = unlines . map ((replicate n ' ')++) . lines
+indent' n = unlines . map (replicate n ' ' ++) . lines
 
 indent :: String -> String
 indent = indent' 4

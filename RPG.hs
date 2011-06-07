@@ -16,11 +16,11 @@ rpgLoop :: RPG ()
 rpgLoop = do
   gzip@(_,gs,_) <- get
   -- Output the response from the last action if there is one
-  maybe (return ()) (\resp -> output resp) (response gs)
+  maybe (return ()) output (response gs)
   output . dBox 80 . screen $ gs
   minput <- getInputLine' "❡➤ "
   case do { input <- minput;
-            lookup input $ builtins} of
+            lookup input builtins} of
     Just (b,rpg) -> rpg >> when b rpgLoop
     Nothing -> 
         case do {input <- minput;
