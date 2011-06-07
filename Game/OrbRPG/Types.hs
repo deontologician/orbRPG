@@ -39,7 +39,7 @@ dmgAmt = fst
 -- For a given orb type, gives the calculation of its damage types and points
 -- towards that type
 baseEnergy :: Orb -> [Damage]
-baseEnergy x = doitup x
+baseEnergy = doitup
     where 
       go a e1 e2 = [(fromEnum a,e1),(fromEnum a,e2)]
       doitup Null = []
@@ -202,4 +202,4 @@ nameList lst = zip (map name lst) lst
 
 
 addAction :: Action -> [(String,Action)] -> [(String,Action)]
-addAction a = map (\(s,a') -> (s,a . a'))
+addAction a = map (second (a .))
