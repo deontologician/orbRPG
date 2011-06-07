@@ -7,4 +7,5 @@
 combinations.txt
 combinations.pdf
 .#*
-orbRPG
+dist/
+*.org
