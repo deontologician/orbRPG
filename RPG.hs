@@ -2,6 +2,9 @@ module Main where
 
 import Game.OrbRPG.Types
 import Game.OrbRPG.Formatting
+import Game.OrbRPG.Combinations
+import Game.OrbRPG.HAdventure.Engine
+import Game.OrbRPG.HAdventure.Builder
 import Control.Monad.State
 import System.Random
 
@@ -123,3 +126,25 @@ gameOverParser _ = Nothing
 
 cleanup :: RPG ()
 cleanup = output (infoResp "Okay, bye!")
+
+-- Undoes one state
+undo :: StateZipper -> StateZipper
+undo (p:past,pres,future) = (past,p,pres:future)
+undo z = z
+
+-- Redoes one state
+redo :: StateZipper -> StateZipper
+redo (past,pres,f:future) = (pres:past,f,future)
+redo z = z
+
+-- Performs an action on the current state, wiping out the previous future
+act :: Action -> StateZipper -> StateZipper
+act a (past,pres,_) = (pres:past,a pres,[])
+
+-- Only the present exists. Get it?
+zen :: StateZipper -> StateZipper
+zen (_,pres,_) = ([],pres,[])
+
+-- Reverses time. I don't really think this is a good idea, but who knows?
+reverseTime :: StateZipper -> StateZipper
+reverseTime (past,pres,future) = (future,pres,past)

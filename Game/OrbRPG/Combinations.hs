@@ -1,77 +1,13 @@
-{-# LANGUAGE FlexibleInstances, UndecidableInstances, OverlappingInstances #-}
-module Game.OrbRPG.Combine where
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE OverlappingInstances #-}
+
+module Game.OrbRPG.Combinations where
+
+
+import Game.OrbRPG.Types
 
 import System.Random
-
-data Orb = Null | Black | White | P Primary | L Letter | E Element 
-         | G God | D Demon | T Tech
-                 deriving (Ord, Eq, Read, Show)
-
-instance Bounded Orb where
-    minBound = Null
-    maxBound = T Gear
-
-instance Enum Orb where
-    fromEnum Null  = 0
-    fromEnum Black = 1
-    fromEnum White = 2
-    fromEnum (P p) = 3 + fromEnum p
-    fromEnum (L l) = 6 + fromEnum l
-    fromEnum (E e) = 9 + fromEnum e
-    fromEnum (G g) = 12 + fromEnum g
-    fromEnum (D d) = 15 + fromEnum d
-    fromEnum (T t) = 18 + fromEnum t
-
-    toEnum 0 = Null
-    toEnum 1 = Black
-    toEnum 2 = White
-    toEnum x | x > 2 && x < 6 = P $ toEnum (x - 3)
-             | x > 5 && x < 9 = L $ toEnum (x - 6)
-             | x > 8 && x < 12 = E $ toEnum (x - 9)
-             | x > 11 && x < 15 = G $ toEnum (x - 12)
-             | x > 14 && x < 18 = D $ toEnum (x - 15)
-             | x > 17 && x < 21 = T $ toEnum (x - 18)
-             | otherwise = error "Int out of range for Orb Enum"
-
--- A function to get one of the basics from an Int
-getBasic :: Int -> Orb
-getBasic = ([Null,White, Black, P Red, L Lambda, E Deuterium, G Nyx,
-                 D Mammon, T Piston] !!)
-
-data Primary = Red | Green  | Blue 
-               deriving (Ord, Eq, Read, Show, Enum, Bounded)
-
-data Letter = Lambda | Mu | Omega 
-            deriving (Ord, Eq, Enum, Bounded)
-
-data Element = Deuterium | Erbium | Cesium
-             deriving (Ord, Eq, Read, Show, Enum, Bounded)
-
-data God = Nyx | Hypnos | Thanatos
-         deriving (Ord, Eq, Read, Show, Enum, Bounded)
-
-data Demon = Mammon | Asmodeus | Belial
-           deriving (Ord, Eq, Read, Show, Enum, Bounded)
-
-data Tech = Piston | Transistor | Gear
-          deriving (Ord, Eq, Read, Show, Enum, Bounded)
-
-
--- The Show and Read instances for Letters are a bit different
-instance Show Letter where
-    show Lambda = "[(λ)]"
-    show Mu     = "[(μ)]"
-    show Omega  = "[(Ω)]"
-
-instance Read Letter where
-    readsPrec _ value = 
-        tryParse [("[(λ)]",Lambda),("[(μ)]",Mu),("[(Ω)]",Omega),
-                 ("Lambda",Lambda),("Mu",Mu),("Omega",Omega)]
-        where tryParse [] = []
-              tryParse ((attempt,result):xs) =
-                  if take (length attempt) value == attempt
-                  then [(result, drop (length attempt) value)]
-                  else tryParse xs
 
 -- Main combination function
 (@>>) :: Orb -> Orb -> Orb
@@ -718,3 +654,21 @@ combinate f xx yy =
     where 
       combined :: Orb
       combined = orb xx @>> orb yy
+
+-- | For a given orb type, gives the calculation of its damage types and points
+--   towards that type
+baseEnergy :: Orb -> [Damage]
+baseEnergy = doitup
+    where 
+      go :: (Enum a) => a -> EnergyType -> EnergyType -> [Damage]
+      go a e1 e2 = [Dmg (fromEnum a) e1, Dmg (fromEnum a) e2]
+      doitup Null = []
+      doitup White = []
+      doitup Black = []
+      doitup (P p) = go p Abstract Physical
+      doitup (L l) = go l Abstract Symbol
+      doitup (E e) = go e Physical Symbol
+      doitup (G g) = go g Spiritual Progress
+      doitup (D d) = go d Spiritual Regress
+      doitup (T t) = go t Progress Regress
+

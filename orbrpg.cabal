@@ -11,8 +11,9 @@ license:             GPL
 license-file:        COPYING
 extra-source-files:  README
 author:              Josh Kuhn
-maintainer:          habitue@gmail.com
+maintainer:          deontologician@gmail.com
 
 executable orbrpg
   main-is:           RPG.hs
-  build-depends:     base, random, mtl, haskeline, text
+  build-depends:     base, random, mtl, haskeline, text,
+                     containers, fclabels, pretty, transformers
